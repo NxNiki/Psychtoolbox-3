@@ -1,4 +1,4 @@
-function [Y,index] = Shuffle(X)
+function [Y,index] = Shuffle(X, bindDim)
 % [Y,index] = Shuffle(X)
 %
 % Randomly sorts X.
@@ -14,15 +14,32 @@ function [Y,index] = Shuffle(X)
 % 6/29/96	  dgp  Edited comments above.
 % 5/18/02   dhb  Modified code to do what comments say, for matrices.
 % 6/2/02    dhb  Fixed bug introduced 5/18.
+% 9/10/15   niki Add bindDim. Sortting each column of X can be simply
+% implemented by Y = X(index) instead of for j=1:n, Y(:,j)=X(index(:,j),j).
 
-[null,index] = sort(rand(size(X)));
-[n,m] = size(X);
-Y = zeros(size(X));
-if n == 1 || m == 1
-	Y = X(index);
-else
-	for j = 1:m
-		Y(:,j)  = X(index(:,j),j);
-	end
+%{
+Example:
+[~,ind]=Shuffle(rand(5,3,4),[1])
+[~,ind]=Shuffle(rand(5,3,4),[2])
+[~,ind]=Shuffle(rand(5,3,4),[3])
+[~,ind]=Shuffle(rand(5,3,4),[1,3])
+%}
+
+if nargin<2
+    bindDim = [];
 end
+
+bind_ind = false(ndims(X),1);
+bind_ind(bindDim) = 1;
+
+siz = size(X);
+siz_unbind = siz;
+siz_unbind(bind_ind) = 1;
+
+siz_bind = siz;
+siz_bind(~bind_ind) = 1;
+
+[~,index] = sort(rand(siz_unbind));
+index = repmat(index,siz_bind);
+Y = X(index);
  
